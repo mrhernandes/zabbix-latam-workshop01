@@ -1,0 +1,92 @@
+---
+  - name: 'Zabbix Repo Install'
+    hosts: zbxserver02 
+    become: true
+    become_user: root
+    tasks:
+        -
+            name: 'Add repository Oficial Zabbix'
+            yum: {name: "https://repo.zabbix.com/zabbix/4.0/rhel/7/x86_64/zabbix-release-4.0-1.el7.noarch.rpm", state: installed}
+        -
+            name: 'Install zabbix server'
+            yum: {name: zabbix-server, state: installed}
+        -
+            name: 'Install zabbix agent'
+            yum: {name: zabbix-agent, state: installed}
+
+        -
+            name: 'Enable service zabbix agent'
+            systemd: {name: zabbix-agent, state: started,enabled: yes}
+
+        -   name: Install Epel Repository
+            yum:
+              name: epel-release-7-11
+              state: installed
+        -
+            name: 'Add repository MariaDB'
+            yum_repository: {name: mariadb, description: 'MariaDB 10.3 CentOS repository list - created 2019-02-27 03:47 UTC', baseurl: 'http://yum.mariadb.org/10.3/centos7-amd64', gpgkey: 'https://yum.mariadb.org/RPM-GPG-KEY-MariaDB', gpgcheck: yes}
+
+        -
+            name: 'Install MariaDB-client'
+            yum: {name: MariaDB-client, state: installed}
+        -
+            name: 'Install MariaDB-server'
+            yum: {name: MariaDB-server, state: installed}
+        -
+            name: 'Starting mariadb.service'
+            systemd: {name: mariadb.service, state: started,enabled: yes}
+        -
+            name: 'Install nmap-ncat'
+            yum: {name: nmap-ncat, state: installed}
+        -
+            name: 'Install python2-pip'
+            yum: {name: python2-pip, state: installed}
+        -
+            name: 'Install python2-PyMySQL'
+            yum: {name: python2-PyMySQL, state: installed}
+        -
+            name: 'Install MySQL-python'
+            yum: {name: MySQL-python, state: installed}
+        -
+            name: 'Install python34'
+            yum: {name: python34, state: installed}
+        -
+            name: 'Install python36'
+            yum: {name: python36, state: installed}
+        -
+            name: 'Create a new database zabbix'
+            mysql_db: {name: zabbix, state: present}
+        -
+            name: Set zabbix user privileges
+            mysql_user: {name: zabbix, password: 123456, priv: '*.*:ALL', state: present}
+        -
+            name: 'Import initial schema.sql zabbix to mysql -uzabbix -p zabbix'
+            mysql_db: {state: import, name: zabbix, target: '/usr/share/doc/zabbix-server-mysql-4.0.7/create.sql.gz'}
+
+        -   name: Changing file /etc/zabbix/zabbix_server.conf
+            copy:
+             src: /etc/ansible/workshop/zabbix_server.conf
+             dest: /etc/zabbix/
+             owner: root
+             group: root
+             mode: 0644
+        -
+            name: 'Enable service zabbix server'
+            systemd: {name: zabbix-server, state: started,enabled: yes}
+        -
+            name: 'Install zabbix-web.noarch'
+            yum: {name: zabbix-web.noarch, state: installed, exclude: zabbix-web-pgsql}
+        -
+            name: 'Install zabbix-web-mysql'
+            yum: {name: zabbix-web-mysql, state: installed}
+
+        -   name: Generate zabbix frontend timezone file
+            copy:
+             src: /etc/ansible/workshop/zabbix.conf
+             dest: /etc/httpd/conf.d/zabbix.conf
+             owner: root
+             group: root
+             mode: 0644
+        -
+            name: 'Enable service httpd'
+            systemd: {name: httpd, state: started,enabled: yes}

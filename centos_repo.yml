@@ -1,0 +1,72 @@
+#Simple Ansible Playbook.yml
+---
+- name: Install the start packages in Centos7
+  hosts: zbxserver02
+  become: true
+  become_user: root
+  tasks:
+    - name: Install Epel Repository
+      yum:
+        name: epel-release-7-11
+        state: installed
+
+    - name: Install the bash-completion
+      yum:
+        name: bash-completion
+        state: installed
+
+    - name: Install the nmap
+      yum:
+        name: nmap
+        state: installed
+
+    - name: Install the traceroute
+      yum:
+        name: traceroute
+        state: installed
+
+    - name: Install the iotop
+      yum:
+        name: iotop
+        state: installed
+
+    - name: Install the net-tools
+      yum:
+        name: net-tools
+        state: installed
+
+    - name: Install the ntpdate
+      yum:
+        name: ntpdate
+        state: installed
+
+    - name: set timezone on server
+      command: timedatectl set-timezone America/Sao_Paulo
+
+    - name: Update date hour pool.ntp.br
+      command: ntpdate pool.ntp.br
+
+    - name: Install the htop
+      yum:
+        name: htop
+        state: installed
+
+    - name: Install the wget
+      yum:
+        name: wget
+        state: installed
+
+    - name: Install the editor vim
+      yum:
+        name: vim
+        state: installed
+
+    - name: Install telnet
+      yum:
+        name: telnet
+        state: installed
+
+    - name: Install git
+      yum:
+        name: git
+        state: installed
